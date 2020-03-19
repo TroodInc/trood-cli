@@ -84,15 +84,32 @@ def rm(space_id):
 
 @space.command()
 @click.argument('name')
-def create(name):
-    result = requests.post(
-        f'http://em.tools.trood.ru/api/v1.0/spaces/',
+@click.option('--template', default='default')
+def create(name: str, template: str):
+    response = requests.get(
+        f'http://em.tools.trood.ru/api/v1.0/market/spaces/{template}/',
         headers={"Authorization": utils.get_token()},
-        json={'name': name}
     )
 
-    if result.status_code == 201:
-        click.echo(f'Space {name} created successfully!')
+    if response.status_code == 200:
+        data = response.json()
+        prompts = {}
+
+        for k, v in data['prompts'].items():
+            is_password = v['type'] == 'password'
+            prompts[k] = click.prompt(v['question'], hide_input=is_password, confirmation_prompt=is_password)
+
+        result = requests.post(
+            f'http://em.tools.trood.ru/api/v1.0/spaces/',
+            headers={"Authorization": utils.get_token()},
+            json={'name': name, 'template': template, 'prompts': prompts}
+        )
+
+        if result.status_code == 201:
+            data = result.json()
+            click.echo(f'Space {data["url"]} created successfully! ')
+    else:
+        click.echo(f'Cant create space from [{template}] template')
 
 
 @space.command()
