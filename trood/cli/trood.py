@@ -1,18 +1,19 @@
-import os
-from time import strftime, gmtime
-
 import click
-import zipfile
 import requests
 
 from pyfiglet import Figlet
 from trood.cli import utils
 
+from .spaces import space
+
 
 @click.group()
-def trood():
+@click.option('-t', '--token')
+@click.pass_context
+def trood(ctx, token: str):
+    ctx.ensure_object(dict)
+    ctx.obj['TOKEN'] = token
     pass
-
 
 @trood.command()
 def info():
@@ -52,94 +53,8 @@ def logout():
 
     utils.clean_token()
 
+@trood.command()
+def token():
+    click.echo(utils.get_token())
 
-@trood.group()
-def space():
-    pass
-
-
-@space.command()
-def ls():
-    result = requests.get(
-        "http://em.tools.trood.ru/api/v1.0/spaces/",
-        headers={"Authorization": utils.get_token()}
-    )
-
-    if result.status_code == 200:
-        utils.list_table(result.json())
-
-
-@space.command()
-@click.argument('space_id')
-def rm(space_id):
-    click.confirm(f'Do you want to remove space #{space_id} ?', abort=True)
-    result = requests.delete(
-        f'http://em.tools.trood.ru/api/v1.0/spaces/{space_id}/',
-        headers={"Authorization": utils.get_token()}
-    )
-
-    if result.status_code == 204:
-        click.echo(f'Space #{space_id} removed successfully!')
-
-
-@space.command()
-@click.argument('name')
-@click.option('--template', default='default')
-def create(name: str, template: str):
-    response = requests.get(
-        f'http://em.tools.trood.ru/api/v1.0/market/spaces/{template}/',
-        headers={"Authorization": utils.get_token()},
-    )
-
-    if response.status_code == 200:
-        data = response.json()
-        prompts = {}
-
-        for k, v in data['prompts'].items():
-            is_password = v['type'] == 'password'
-            prompts[k] = click.prompt(v['question'], hide_input=is_password, confirmation_prompt=is_password)
-
-        result = requests.post(
-            f'http://em.tools.trood.ru/api/v1.0/spaces/',
-            headers={"Authorization": utils.get_token()},
-            json={'name': name, 'template': template, 'prompts': prompts}
-        )
-
-        if result.status_code == 201:
-            data = result.json()
-            click.echo(f'Space {data["url"]} created successfully! ')
-    else:
-        click.echo(f'Cant create space from [{template}] template')
-
-
-@space.command()
-@click.argument('space_id')
-@click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True))
-def publish(space_id, path):
-    click.confirm(f'Do you want to publish "{path}" to yout space #{space_id}?', abort=True)
-
-    def zipdir(path, ziph):
-        # ziph is zipfile handle
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                fp = os.path.join(root, file)
-                zp = fp.replace(path, '')
-
-                ziph.write(filename=fp, arcname=zp)
-
-    time = strftime("%Y-%m-%d__%H-%M-%S", gmtime())
-
-    zipf = zipfile.ZipFile(f'{space_id}-{time}.zip', 'w', zipfile.ZIP_DEFLATED)
-    zipdir(path, zipf)
-    zipf.close()
-
-    result = requests.post(
-        f'http://em.tools.trood.ru/api/v1.0/spaces/{space_id}/publish/',
-        headers={"Authorization": utils.get_token()},
-        files={'bundle': open(f'{space_id}-{time}.zip', 'rb')}
-    )
-
-    if result.status_code == 201:
-        click.echo(f'Web app successfuly published to http://{space_id}.saas.trood.ru')
-    else:
-        click.echo(f'Error while publishing: {result.content}', err=True)
+trood.add_command(space)
