@@ -7,8 +7,8 @@ def save_token(token):
     keyring.set_password("trood/em", "active", token)
 
 
-def get_token():
-    token = keyring.get_password("trood/em", "active")
+def get_token(ctx: click.Context = None) -> str:
+    token = ctx.obj.get('TOKEN') if ctx and 'TOKEN' in ctx.obj else keyring.get_password("trood/em", "active")
     if token:
         return f'Token: {token}'
     else:
