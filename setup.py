@@ -1,8 +1,16 @@
+import os
+
 from setuptools import setup, find_packages
+
+
+def get_version():
+    with open(os.path.join(os.path.curdir, 'VERSION')) as version_file:
+        return version_file.read().strip()
+
 
 setup(
     name='trood-cli',
-    version=0.2,
+    version=get_version(),
     packages=find_packages(),
     include_package_data=True,
     author='Trood Inc',
