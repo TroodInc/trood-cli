@@ -74,7 +74,8 @@ def create(ctx, name: str, template: str):
 @click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.pass_context
 def publish(ctx, space_id, path):
-    click.confirm(f'Do you want to publish "{path}" to yout space #{space_id}?', abort=True)
+    if ctx and not ctx.obj.get('FORCE'):
+        click.confirm(f'Do you want to publish "{path}" to yout space #{space_id}?', abort=True)
 
     def zipdir(path, ziph):
         # ziph is zipfile handle

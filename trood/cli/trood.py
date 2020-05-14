@@ -9,10 +9,12 @@ from .spaces import space
 
 @click.group()
 @click.option('-t', '--token')
+@click.option('-f', '--force', is_flag=True, flag_value=True)
 @click.pass_context
-def trood(ctx, token: str):
+def trood(ctx, token: str, force: bool):
     ctx.ensure_object(dict)
     ctx.obj['TOKEN'] = token
+    ctx.obj['FORCE'] = force
     pass
 
 @trood.command()
