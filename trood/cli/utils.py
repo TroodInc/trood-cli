@@ -8,15 +8,21 @@ def save_token(token):
 
 
 def get_token(ctx: click.Context = None) -> str:
-    token = keyring.get_password("trood/em", "active")
-
     if ctx:
-        token = ctx.obj.get('TOKEN') or token
+        token = ctx.obj.get('TOKEN')
 
-    if token:
-        return f'Token: {token}'
-    else:
-        click.echo(f'You need to login first.')
+        if token:
+            return f'Token: {token}'
+
+    try:
+        token = keyring.get_password("trood/em", "active")
+
+        if token:
+            return f'Token: {token}'
+        else:
+            click.echo(f'You need to login first.')
+    except Exception:
+        click.echo(f'Keychain not supported, use --token flag for authorization')
 
 
 def clean_token():
