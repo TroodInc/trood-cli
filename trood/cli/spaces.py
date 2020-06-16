@@ -65,6 +65,9 @@ def create(ctx, name: str, template: str):
         if result.status_code == 201:
             data = result.json()
             click.echo(f'Space {data["url"]} created successfully! ')
+        elif result.status_code == 400:
+            data = result.json()
+            click.echo(data['msg'])
     else:
         click.echo(f'Cant create space from [{template}] template')
 
