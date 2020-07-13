@@ -5,41 +5,43 @@ Space managing
 Space help
 ^^^^^^^^^^
 
-::
+.. code-block:: bash
 
-    $ trood space --help
+    trood space --help
 
 ls
 ^^^
 Get list of all your spaces
 
-::
+.. code-block:: bash
 
-    $ trood space ls
+    trood space ls
 
 Remove space
 ^^^^^^^^^^^^
 
-::
+.. code-block:: bash
 
-    $ trood space rm <space_id>
+    trood space rm <space_id>
 
 Create space
 ^^^^^^^^^^^^
 
-::
+.. code-block:: bash
 
-    $ trood space create <space_name>
+    trood space create <space_name>
 
 Create space from template
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-::
 
-    $ trood space create <space_name> --template <template_name>
+.. code-block:: bash
+
+    trood space create <space_name> --template <template_name>
 
 Publish frontend
 ^^^^^^^^^^^^^^^^
-::
 
-    $ trood space publish <space_name> <path_to_frontend_folder>
+.. code-block:: bash
+
+    trood space publish <space_name> <path_to_frontend_folder>
 
