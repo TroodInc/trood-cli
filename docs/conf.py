@@ -40,6 +40,7 @@ release = u'0.1.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    "sphinx_rtd_theme",
     # 'sphinxcontrib.openapi',
     # 'autoapi.extension',
     # 'sphinx.ext.inheritance_diagram',
@@ -82,7 +83,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'classic'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -138,7 +139,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'trood-auth.tex', u'trood-auth Documentation',
+    (master_doc, 'trood-cli.tex', u'trood-cli Documentation',
      u'Trood Inc', 'manual'),
 ]
 
@@ -159,8 +160,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'trood-auth', u'trood-auth Documentation',
-     author, 'trood-auth', 'One line description of project.',
+    (master_doc, 'trood-cli', u'trood-cli Documentation',
+     author, 'trood-cli', 'One line description of project.',
      'Miscellaneous'),
 ]
 
