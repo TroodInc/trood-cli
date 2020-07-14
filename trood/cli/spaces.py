@@ -5,6 +5,7 @@ import requests
 from time import strftime, gmtime
 
 from trood.cli import utils
+from trood.cli.utils import get_em_ulr
 
 
 @click.group()
@@ -16,7 +17,7 @@ def space():
 @click.pass_context
 def ls(ctx):
     result = requests.get(
-        "http://em.tools.trood.ru/api/v1.0/spaces/",
+        get_em_ulr('api/v1.0/spaces/'),
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
@@ -30,7 +31,7 @@ def ls(ctx):
 def rm(ctx, space_id):
     click.confirm(f'Do you want to remove space #{space_id} ?', abort=True)
     result = requests.delete(
-        f'http://em.tools.trood.ru/api/v1.0/spaces/{space_id}/',
+        get_em_ulr(f'api/v1.0/spaces/{space_id}/'),
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
@@ -44,7 +45,7 @@ def rm(ctx, space_id):
 @click.pass_context
 def create(ctx, name: str, template: str):
     response = requests.get(
-        f'http://em.tools.trood.ru/api/v1.0/market/spaces/{template}/',
+        get_em_ulr(f'api/v1.0/market/spaces/{template}/'),
         headers={"Authorization": utils.get_token(ctx=ctx)},
     )
 
@@ -57,7 +58,7 @@ def create(ctx, name: str, template: str):
             prompts[k] = click.prompt(v['question'], hide_input=is_password, confirmation_prompt=is_password)
 
         result = requests.post(
-            f'http://em.tools.trood.ru/api/v1.0/spaces/',
+            get_em_ulr('api/v1.0/spaces/'),
             headers={"Authorization": utils.get_token()},
             json={'name': name, 'template': template, 'prompts': prompts}
         )
@@ -96,7 +97,7 @@ def publish(ctx, space_id, path):
     zipf.close()
 
     result = requests.post(
-        f'http://em.tools.trood.ru/api/v1.0/spaces/{space_id}/publish/',
+        get_em_ulr(f'api/v1.0/spaces/{space_id}/publish/'),
         headers={"Authorization": utils.get_token(ctx=ctx)},
         files={'bundle': open(f'{space_id}-{time}.zip', 'rb')}
     )

@@ -1,7 +1,11 @@
+import os
 import keyring
 import click
 from tabulate import tabulate
 
+def get_em_ulr(path):
+    host = os.environ.get("EM", "em.tools.trood.ru")
+    return f'https://{host}/{path}'
 
 def save_token(token):
     keyring.set_password("trood/em", "active", token)

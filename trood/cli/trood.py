@@ -5,6 +5,7 @@ from pyfiglet import Figlet
 from trood.cli import utils
 
 from .spaces import space
+from .utils import get_em_ulr
 
 
 @click.group()
@@ -30,7 +31,7 @@ def info():
 @click.option('--password', prompt=True, hide_input=True)
 def login(username: str, password: str):
     result = requests.post(
-        'https://tcp.trood.com/auth/api/v1.0/login',
+        get_em_ulr('api/v1.0/login'),
         json={'login': username.strip(), 'password': password.strip()}
     )
 
@@ -51,7 +52,7 @@ def login(username: str, password: str):
 def logout():
     click.confirm('Do you want to logout ?', abort=True)
 
-    requests.post('https://tcp.trood.com/auth/api/v1.0/logout', headers={"Authorization": utils.get_token()})
+    requests.post(get_em_ulr('api/v1.0/logout'), headers={"Authorization": utils.get_token()})
 
     utils.clean_token()
 
