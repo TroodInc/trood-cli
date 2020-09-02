@@ -64,7 +64,8 @@ Use following structure.
         {
             "target": <authorization/fileservice>,
             "fixture": [
-                {
+                "type": "record",
+                "data": {
                     "model": <model.name>,
                     "pk": <id>,
                     "fields": { ... }

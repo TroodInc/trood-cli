@@ -111,9 +111,12 @@ def publish(ctx, space_id, path):
 @space.command()
 @click.argument('namespace')
 @click.argument('path', type=click.Path(exists=True, file_okay=True))
+@click.option('-t', '--token')
 @click.option('-v', '--verbose',  is_flag=True)
 @click.pass_context
-def load_data(ctx, namespace, path, verbose):
-    token = utils.get_token(ctx=ctx)
+def load_data(ctx, namespace, path, token, verbose):
+    if token is None:
+        token = utils.get_token(ctx=ctx)
     fixtures = utils.get_fixtures(path)
-    utils.apply_fixture(namespace, fixtures, verbose, token)
+    loader = utils.DataLoader(namespace, token, verbose)
+    loader.apply_all(fixtures)
