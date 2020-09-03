@@ -117,6 +117,18 @@ def publish(ctx, space_id, path):
 def load_data(ctx, namespace, path, token, verbose):
     if token is None:
         token = utils.get_token(ctx=ctx)
+
+    click.echo("Your data is loading, please wait ...")
+
+    result = requests.get(
+        f"https://{namespace}.saas.trood.ru/authorization/api/v1.0/login/trood/",
+        headers={"Authorization": f"{token.replace(':', '')}"}
+    )
+    if result.status_code == 200:
+        click.echo(f"Authentication ok.")
+    elif result.status_code != 200:
+        click.echo(f"Authentication error.")
+
     fixtures = utils.get_fixtures(path)
     loader = utils.DataLoader(namespace, token, verbose)
     loader.apply_all(fixtures)
