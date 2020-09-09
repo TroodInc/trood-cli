@@ -111,12 +111,10 @@ def publish(ctx, space_id, path):
 @space.command()
 @click.argument('namespace')
 @click.argument('path', type=click.Path(exists=True, file_okay=True))
-@click.option('-t', '--token')
-@click.option('-v', '--verbose',  is_flag=True)
 @click.pass_context
-def load_data(ctx, namespace, path, token, verbose):
-    if token is None:
-        token = utils.get_token(ctx=ctx)
+def load_data(ctx, namespace, path):
+    token = utils.get_token(ctx=ctx)
+    verbose = ctx.obj.get('VERBOSE')
 
     click.echo("Your data is loading, please wait ...")
 
