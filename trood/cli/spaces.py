@@ -74,12 +74,12 @@ def create(ctx, name: str, template: str):
 
 
 @space.command()
-@click.argument('space_id')
+@click.argument('application')
 @click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True))
 @click.pass_context
-def publish(ctx, space_id, path):
+def publish(ctx, application, path):
     if ctx and not ctx.obj.get('FORCE'):
-        click.confirm(f'Do you want to publish "{path}" to yout space #{space_id}?', abort=True)
+        click.confirm(f'Do you want to publish "{path}" to your app #{application}?', abort=True)
 
     def zipdir(path, ziph):
         # ziph is zipfile handle
@@ -92,17 +92,17 @@ def publish(ctx, space_id, path):
 
     time = strftime("%Y-%m-%d__%H-%M-%S", gmtime())
 
-    zipf = zipfile.ZipFile(f'{space_id}-{time}.zip', 'w', zipfile.ZIP_DEFLATED)
+    zipf = zipfile.ZipFile(f'{application}-{time}.zip', 'w', zipfile.ZIP_DEFLATED)
     zipdir(path, zipf)
     zipf.close()
 
     result = requests.post(
-        get_em_ulr(f'api/v1.0/spaces/{space_id}/publish/'),
+        get_em_ulr(f'api/v1.0/spaces/{application}/publish/'),
         headers={"Authorization": utils.get_token(ctx=ctx)},
-        files={'bundle': open(f'{space_id}-{time}.zip', 'rb')}
+        files={'bundle': open(f'{application}-{time}.zip', 'rb')}
     )
 
     if result.status_code == 201:
-        click.echo(f'Web app successfuly published to http://{space_id}.saas.trood.ru')
+        click.echo(f'Web app {application} successfuly published')
     else:
         click.echo(f'Error while publishing: {result.content}', err=True)

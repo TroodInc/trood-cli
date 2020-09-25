@@ -43,5 +43,5 @@ Publish frontend
 
 .. code-block:: bash
 
-    trood space publish <space_name> <path_to_frontend_folder>
+    trood space publish <application_alias> <path_to_frontend_folder>
 
