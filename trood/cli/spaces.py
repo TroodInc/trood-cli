@@ -97,9 +97,10 @@ def publish(ctx, application, path):
     zipf.close()
 
     result = requests.post(
-        get_em_ulr(f'api/v1.0/spaces/{application}/publish/'),
+        get_em_ulr('api/v1.0/bundles/'),
         headers={"Authorization": utils.get_token(ctx=ctx)},
-        files={'bundle': open(f'{application}-{time}.zip', 'rb')}
+        data={"application": application},
+        files={'file': open(f'{application}-{time}.zip', 'rb')}
     )
 
     if result.status_code == 201:
