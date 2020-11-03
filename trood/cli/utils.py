@@ -19,13 +19,13 @@ def get_token(ctx: click.Context = None) -> str:
         token = ctx.obj.get('TOKEN')
 
         if token:
-            return f'Token: {token}'
+            return f'Token {token}'
 
     try:
         token = keyring.get_password("trood/em", "active")
 
         if token:
-            return f'Token: {token}'
+            return f'Token {token}'
         else:
             click.echo(f'You need to login first.')
     except Exception:
