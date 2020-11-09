@@ -1,4 +1,5 @@
 import os
+import json
 import zipfile
 import click
 import requests
@@ -26,17 +27,25 @@ def ls(ctx):
 
 
 @space.command()
-@click.argument('space_id')
+@click.argument('space_alias')
 @click.pass_context
-def rm(ctx, space_id):
-    click.confirm(f'Do you want to remove space #{space_id} ?', abort=True)
+def rm(ctx, space_alias):
+    click.confirm(f'Do you want to remove space #{space_alias} ?', abort=True)
+
+    result = requests.get(get_em_ulr('api/v1.0/spaces/'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    spaces = json.loads(result.text)
+
+    for space in spaces:
+        if space['alias'] == space_alias:
+            space_id = space['id']
+
     result = requests.delete(
-        get_em_ulr(f'api/v1.0/spaces/{space_id}/'),
+        get_em_ulr(f'api/v1.0/spaces/{space_id if space_id else space_alias}/'),
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
     if result.status_code == 204:
-        click.echo(f'Space #{space_id} removed successfully!')
+        click.echo(f'Space #{space_alias} removed successfully!')
 
 
 @space.command()
@@ -96,10 +105,17 @@ def publish(ctx, application, path):
     zipdir(path, zipf)
     zipf.close()
 
+    result = requests.get(get_em_ulr('api/v1.0/applications/'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    apps = json.loads(result.text)
+
+    for app in apps:
+        if app['alias'] == application:
+            app_id = app['id']
+
     result = requests.post(
         get_em_ulr('api/v1.0/bundles/'),
         headers={"Authorization": utils.get_token(ctx=ctx)},
-        data={"application": application},
+        data={"application": app_id if app_id else application},
         files={'file': open(f'{application}-{time}.zip', 'rb')}
     )
 
