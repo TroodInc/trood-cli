@@ -1,4 +1,5 @@
 import os
+import json
 import zipfile
 import click
 import requests
@@ -106,3 +107,34 @@ def publish(ctx, space_id, path):
         click.echo(f'Web app successfuly published to http://{space_id}.saas.trood.ru')
     else:
         click.echo(f'Error while publishing: {result.content}', err=True)
+
+
+@space.command()
+@click.argument('space_alias')
+@click.argument('comment')
+@click.pass_context
+def backup(ctx, space_alias, comment):
+    if ctx and not ctx.obj.get('FORCE'):
+        click.confirm(f'Do you want to create a backup of "{space_alias}"?', abort=True)
+
+    result = requests.get(get_em_ulr('api/v1.0/spaces/'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    spaces = json.loads(result.text)
+
+    space_id = None
+    for space in spaces:
+        if space['alias'] == space_alias:
+            space_id = space['id']
+
+    if not space_id:
+        click.echo(f'Error while creating the backup: space "{space_alias}" does not exist', err=True)
+    else:
+        result = requests.post(
+            get_em_ulr('api/v1.0/backups/'),
+            headers={"Authorization": utils.get_token(ctx=ctx)},
+            json={'space': space_id, 'comment': comment}
+        )
+
+        if result.status_code == 201:
+            click.echo(f'Backup of space "{space_alias}" was successfuly created')
+        else:
+            click.echo(f'Error while creating the backup: {result.content}', err=True)
