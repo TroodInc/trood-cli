@@ -108,18 +108,22 @@ def publish(ctx, application, path):
     result = requests.get(get_em_ulr('api/v1.0/applications/'), headers={"Authorization": utils.get_token(ctx=ctx)})
     apps = json.loads(result.text)
 
+    app_id = None
     for app in apps:
         if app['alias'] == application:
             app_id = app['id']
 
-    result = requests.post(
-        get_em_ulr('api/v1.0/bundles/'),
-        headers={"Authorization": utils.get_token(ctx=ctx)},
-        data={"application": app_id if app_id else application},
-        files={'file': open(f'{application}-{time}.zip', 'rb')}
-    )
-
-    if result.status_code == 201:
-        click.echo(f'Web app {application} successfuly published')
+    if not app_id:
+        click.echo(f'Error while publishing: web app {application} does not exist', err=True)
     else:
-        click.echo(f'Error while publishing: {result.content}', err=True)
+        result = requests.post(
+            get_em_ulr('api/v1.0/bundles/'),
+            headers={"Authorization": utils.get_token(ctx=ctx)},
+            data={"application": app_id},
+            files={'file': open(f'{application}-{time}.zip', 'rb')}
+        )
+
+        if result.status_code == 201:
+            click.echo(f'Web app {application} successfuly published')
+        else:
+            click.echo(f'Error while publishing: {result.content}', err=True)
