@@ -111,19 +111,18 @@ def publish(ctx, space_id, path):
 
 @space.command()
 @click.argument('space_alias')
-@click.argument('comment')
+@click.argument('name', default='default_name')
+@click.argument('comment', default='default_comment')
 @click.pass_context
-def backup(ctx, space_alias, comment):
+def backup(ctx, space_alias, name, comment):
     if ctx and not ctx.obj.get('FORCE'):
         click.confirm(f'Do you want to create a backup of "{space_alias}"?', abort=True)
 
-    result = requests.get(get_em_ulr('api/v1.0/spaces/'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,"{space_alias}"'), headers={"Authorization": utils.get_token(ctx=ctx)})
     spaces = json.loads(result.text)
-
     space_id = None
-    for space in spaces:
-        if space['alias'] == space_alias:
-            space_id = space['id']
+    if spaces:
+        space_id = spaces[0]['id']
 
     if not space_id:
         click.echo(f'Error while creating the backup: space "{space_alias}" does not exist', err=True)
@@ -131,7 +130,7 @@ def backup(ctx, space_alias, comment):
         result = requests.post(
             get_em_ulr('api/v1.0/backups/'),
             headers={"Authorization": utils.get_token(ctx=ctx)},
-            json={'space': space_id, 'comment': comment}
+            json={'space': space_id, 'name': name, 'comment': comment}
         )
 
         if result.status_code == 201:
