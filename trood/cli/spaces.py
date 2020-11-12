@@ -32,15 +32,15 @@ def ls(ctx):
 def rm(ctx, space_alias):
     click.confirm(f'Do you want to remove space #{space_alias} ?', abort=True)
 
-    result = requests.get(get_em_ulr('api/v1.0/spaces/'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,{space_alias})'), headers={"Authorization": utils.get_token(ctx=ctx)})
     spaces = json.loads(result.text)
 
-    for space in spaces:
-        if space['alias'] == space_alias:
-            space_id = space['id']
+    space_id = None
+    if spaces:
+        space_id = spaces[0]['id']
 
     result = requests.delete(
-        get_em_ulr(f'api/v1.0/spaces/{space_id if space_id else space_alias}/'),
+        get_em_ulr(f'api/v1.0/spaces/{space_id}/'),
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
@@ -105,13 +105,12 @@ def publish(ctx, application, path):
     zipdir(path, zipf)
     zipf.close()
 
-    result = requests.get(get_em_ulr('api/v1.0/applications/'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    result = requests.get(get_em_ulr(f'api/v1.0/applications/?rql=eq(alias,{application})'), headers={"Authorization": utils.get_token(ctx=ctx)})
     apps = json.loads(result.text)
 
     app_id = None
-    for app in apps:
-        if app['alias'] == application:
-            app_id = app['id']
+    if apps:
+        app_id = apps[0]['id']
 
     if not app_id:
         click.echo(f'Error while publishing: web app {application} does not exist', err=True)
