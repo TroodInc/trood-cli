@@ -1,4 +1,5 @@
 import os
+import json
 import zipfile
 import click
 import requests
@@ -26,17 +27,25 @@ def ls(ctx):
 
 
 @space.command()
-@click.argument('space_id')
+@click.argument('space_alias')
 @click.pass_context
-def rm(ctx, space_id):
-    click.confirm(f'Do you want to remove space #{space_id} ?', abort=True)
+def rm(ctx, space_alias):
+    click.confirm(f'Do you want to remove space #{space_alias} ?', abort=True)
+
+    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,{space_alias})'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    spaces = json.loads(result.text)
+
+    space_id = None
+    if spaces:
+        space_id = spaces[0]['id']
+
     result = requests.delete(
         get_em_ulr(f'api/v1.0/spaces/{space_id}/'),
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
     if result.status_code == 204:
-        click.echo(f'Space #{space_id} removed successfully!')
+        click.echo(f'Space #{space_alias} removed successfully!')
 
 
 @space.command()
@@ -96,14 +105,24 @@ def publish(ctx, application, path):
     zipdir(path, zipf)
     zipf.close()
 
-    result = requests.post(
-        get_em_ulr('api/v1.0/bundles/'),
-        headers={"Authorization": utils.get_token(ctx=ctx)},
-        data={"application": application},
-        files={'file': open(f'{application}-{time}.zip', 'rb')}
-    )
+    result = requests.get(get_em_ulr(f'api/v1.0/applications/?rql=eq(alias,{application})'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    apps = json.loads(result.text)
 
-    if result.status_code == 201:
-        click.echo(f'Web app {application} successfuly published')
+    app_id = None
+    if apps:
+        app_id = apps[0]['id']
+
+    if not app_id:
+        click.echo(f'Error while publishing: web app {application} does not exist', err=True)
     else:
-        click.echo(f'Error while publishing: {result.content}', err=True)
+        result = requests.post(
+            get_em_ulr('api/v1.0/bundles/'),
+            headers={"Authorization": utils.get_token(ctx=ctx)},
+            data={"application": app_id},
+            files={'file': open(f'{application}-{time}.zip', 'rb')}
+        )
+
+        if result.status_code == 201:
+            click.echo(f'Web app {application} successfuly published')
+        else:
+            click.echo(f'Error while publishing: {result.content}', err=True)
