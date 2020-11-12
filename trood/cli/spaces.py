@@ -118,7 +118,7 @@ def backup(ctx, space_alias, name, comment):
     if ctx and not ctx.obj.get('FORCE'):
         click.confirm(f'Do you want to create a backup of "{space_alias}"?', abort=True)
 
-    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,"{space_alias}"'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,{space_alias}'), headers={"Authorization": utils.get_token(ctx=ctx)})
     spaces = json.loads(result.text)
     space_id = None
     if spaces:
