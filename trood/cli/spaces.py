@@ -111,8 +111,8 @@ def publish(ctx, space_id, path):
 
 @space.command()
 @click.argument('space_alias')
-@click.argument('name', default='default_name')
-@click.argument('comment', default='default_comment')
+@click.argument('comment', default='')
+@click.argument('name', default=f'Backup {strftime("%b %d, %Y", gmtime())}')
 @click.pass_context
 def backup(ctx, space_alias, name, comment):
     if ctx and not ctx.obj.get('FORCE'):
