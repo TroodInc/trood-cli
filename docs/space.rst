@@ -48,7 +48,7 @@ optional argument: -- verbose (-v) shows full error message.
 
 .. code-block:: bash
 
-    trood space load_data <space_name> <path_to_file> --verbose --token "Token: d89538ad2f40436fb874e0f0a3ac1e1a"
+    trood space load_data <space_name> <path_to_file> --verbose --token <token>
 
 
 Publish frontend
