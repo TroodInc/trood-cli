@@ -1,4 +1,5 @@
 import os
+import json
 import zipfile
 import click
 import requests
@@ -64,7 +65,7 @@ def create(ctx, name: str, template: str):
 
         if result.status_code == 201:
             data = result.json()
-            click.echo(f'Space {data["url"]} created successfully! ')
+            click.echo(f'Space {data["data"]["url"]} created successfully! ')
         elif result.status_code == 400:
             data = result.json()
             click.echo(data['msg'])
@@ -125,3 +126,31 @@ def load_data(ctx, namespace, path):
         loader.apply_all(fixtures)
     except requests.HTTPError as err:
         click.echo(f"Authentication failed.\n Error: {err}")
+
+@click.argument('space_alias')
+@click.argument('comment', default='')
+@click.argument('name', default=f'Backup {strftime("%b %d, %Y", gmtime())}')
+@click.pass_context
+def backup(ctx, space_alias, name, comment):
+    if ctx and not ctx.obj.get('FORCE'):
+        click.confirm(f'Do you want to create a backup of "{space_alias}"?', abort=True)
+
+    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,{space_alias})'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    spaces = json.loads(result.text)
+    space_id = None
+    if spaces:
+        space_id = spaces[0]['id']
+
+    if not space_id:
+        click.echo(f'Error while creating the backup: space "{space_alias}" does not exist', err=True)
+    else:
+        result = requests.post(
+            get_em_ulr('api/v1.0/backups/'),
+            headers={"Authorization": utils.get_token(ctx=ctx)},
+            json={'space': space_id, 'name': name, 'comment': comment}
+        )
+
+        if result.status_code == 201:
+            click.echo(f'Backup of space "{space_alias}" was successfuly created')
+        else:
+            click.echo(f'Error while creating the backup: {result.content}', err=True)
