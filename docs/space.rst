@@ -48,7 +48,7 @@ optional argument: -- verbose (-v) shows full error message.
 
 .. code-block:: bash
 
-    trood space load_data <space_name> <path_to_file> --verbose --token <token>
+    trood space load-data <space_name> <path_to_file> --verbose --token <token>
 
 
 Publish frontend
