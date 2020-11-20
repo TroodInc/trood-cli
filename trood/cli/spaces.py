@@ -4,7 +4,6 @@ import zipfile
 import click
 import requests
 from time import strftime, gmtime
-
 from trood.cli import utils
 from trood.cli.utils import get_em_ulr
 
@@ -110,6 +109,24 @@ def publish(ctx, space_id, path):
 
 
 @space.command()
+@click.argument('namespace')
+@click.argument('path', type=click.Path(exists=True, file_okay=True))
+@click.pass_context
+def load_data(ctx, namespace, path): 
+    click.echo("Your data is loading, please wait ...")
+
+    try:
+        result = requests.get(
+            f"https://{namespace}.saas.trood.ru/authorization/api/v1.0/login/trood",
+            headers={"Authorization":  utils.get_token(ctx=ctx)}
+        )
+        result.raise_for_status()
+        fixtures = utils.get_fixtures(path)
+        loader = utils.DataLoader(namespace, token=utils.get_token(ctx=ctx), verbose=ctx.obj.get('VERBOSE'))
+        loader.apply_all(fixtures)
+    except requests.HTTPError as err:
+        click.echo(f"Authentication failed.\n Error: {err}")
+
 @click.argument('space_alias')
 @click.argument('comment', default='')
 @click.argument('name', default=f'Backup {strftime("%b %d, %Y", gmtime())}')
