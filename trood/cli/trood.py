@@ -1,10 +1,14 @@
+import os
+
 import click
 import requests
+import json
 
 from pyfiglet import Figlet
 from trood.cli import utils
 
 from .spaces import space
+from .application import application
 from .utils import get_em_ulr
 
 
@@ -18,6 +22,15 @@ def trood(ctx, token: str, force: bool, verbose: bool):
     ctx.obj['TOKEN'] = token
     ctx.obj['FORCE'] = force
     ctx.obj['VERBOSE'] = verbose
+
+    path = os.path.join(os.getcwd(), '.trood')
+    if os.path.isfile(path):
+        with open(path) as f:
+            conf = json.load(f)
+
+            if 'id' in conf:
+                ctx.obj['SPACE'] = conf.get('id')
+
     pass
 
 @trood.command()
@@ -63,3 +76,4 @@ def token():
     click.echo(utils.get_token())
 
 trood.add_command(space)
+trood.add_command(application)
