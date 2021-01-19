@@ -50,6 +50,10 @@ def bundle(ctx, app, path, space: str):
     )
 
     if result.status_code != 200 or len(result.json()) == 0:
+        click.echo(uri)
+        click.echo(utils.get_token(ctx=ctx))
+        click.echo(result.status_code)
+        click.echo(result.content)
         raise click.ClickException(f'Application #{app} cant be accessed witin #{space} space.')
 
     app_obj = result.json()[0]
