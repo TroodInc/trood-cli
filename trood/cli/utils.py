@@ -7,7 +7,7 @@ import json
 
 
 def get_em_ulr(path):
-    host = os.environ.get("EM", "em.tools.trood.ru")
+    host = os.environ.get("EM", "em.trood.com")
     return f'https://{host}/{path}'
 
 def save_token(token):
