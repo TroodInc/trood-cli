@@ -43,7 +43,7 @@ def bundle(ctx, app, path, space: str):
     if not space:
         raise click.BadParameter(f'Need to specify space ID for proper bundle upload', param_hint='--space', ctx=ctx)
 
-    uri = f'api/v1.0/applications/?rql=eq(alias,{app}),eq(project,{space})'
+    uri = f'api/v1.0/applications/?rql=eq(alias,{app}),eq(space,{space})'
     result = requests.get(
         utils.get_em_ulr(uri),
         headers={"Authorization": utils.get_token(ctx=ctx)}
