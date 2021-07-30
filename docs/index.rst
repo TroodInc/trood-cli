@@ -39,6 +39,20 @@ Logout
 
     trood logout
 
+Arguments
+^^^^^^^^^
+Avalible arguments.
+
+#. Use your token: -t, --token.
+#. Skips confirmation questions: -f, --force.
+#. Show full error message: -v, --verobose.
+
+.. code-block:: bash
+
+    trood -t <TOKEN> ...
+    trood -f ...
+    trood -v ...
+
 
 Contents
 --------

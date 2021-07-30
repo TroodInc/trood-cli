@@ -38,6 +38,19 @@ Create space from template
 
     trood space create <space_name> --template <template_name>
 
+Migrate buisiness objects and load data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+optional argument: -- verbose (-v) shows full error message.
+
+:ref:`fixtures`
+
+
+
+.. code-block:: bash
+
+    trood space load-data <space_name> <path_to_file> --verbose --token <token>
+
+
 Publish frontend
 ^^^^^^^^^^^^^^^^
 

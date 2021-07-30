@@ -1,9 +1,7 @@
-import os
-import zipfile
+import json
 import click
 import requests
 from time import strftime, gmtime
-
 from trood.cli import utils
 from trood.cli.utils import get_em_ulr
 
@@ -17,7 +15,7 @@ def space():
 @click.pass_context
 def ls(ctx):
     result = requests.get(
-        get_em_ulr('api/v1.0/spaces/'),
+        get_em_ulr('api/v1.0/spaces/?only=id,name,alias,url'),
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
@@ -83,35 +81,48 @@ def create(ctx, name: str, template: str):
 
 
 @space.command()
-@click.argument('space_id')
-@click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True))
+@click.argument('namespace')
+@click.argument('path', type=click.Path(exists=True, file_okay=True))
 @click.pass_context
-def publish(ctx, space_id, path):
+def load_data(ctx, namespace, path): 
+    click.echo("Your data is loading, please wait ...")
+
+    try:
+        result = requests.get(
+            f"https://{namespace}.saas.trood.ru/authorization/api/v1.0/login/trood",
+            headers={"Authorization":  utils.get_token(ctx=ctx)}
+        )
+        result.raise_for_status()
+        fixtures = utils.get_fixtures(path)
+        loader = utils.DataLoader(namespace, token=utils.get_token(ctx=ctx), verbose=ctx.obj.get('VERBOSE'))
+        loader.apply_all(fixtures)
+    except requests.HTTPError as err:
+        click.echo(f"Authentication failed.\n Error: {err}")
+
+@click.argument('space_alias')
+@click.argument('comment', default='')
+@click.argument('name', default=f'Backup {strftime("%b %d, %Y", gmtime())}')
+@click.pass_context
+def backup(ctx, space_alias, name, comment):
     if ctx and not ctx.obj.get('FORCE'):
-        click.confirm(f'Do you want to publish "{path}" to yout space #{space_id}?', abort=True)
+        click.confirm(f'Do you want to create a backup of "{space_alias}"?', abort=True)
 
-    def zipdir(path, ziph):
-        # ziph is zipfile handle
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                fp = os.path.join(root, file)
-                zp = fp.replace(path, '')
+    result = requests.get(get_em_ulr(f'api/v1.0/spaces/?rql=eq(alias,{space_alias})'), headers={"Authorization": utils.get_token(ctx=ctx)})
+    spaces = json.loads(result.text)
+    space_id = None
+    if spaces:
+        space_id = spaces[0]['id']
 
-                ziph.write(filename=fp, arcname=zp)
-
-    time = strftime("%Y-%m-%d__%H-%M-%S", gmtime())
-
-    zipf = zipfile.ZipFile(f'{space_id}-{time}.zip', 'w', zipfile.ZIP_DEFLATED)
-    zipdir(path, zipf)
-    zipf.close()
-
-    result = requests.post(
-        get_em_ulr(f'api/v1.0/spaces/{space_id}/publish/'),
-        headers={"Authorization": utils.get_token(ctx=ctx)},
-        files={'bundle': open(f'{space_id}-{time}.zip', 'rb')}
-    )
-
-    if result.status_code == 201:
-        click.echo(f'Web app successfuly published to http://{space_id}.saas.trood.ru')
+    if not space_id:
+        click.echo(f'Error while creating the backup: space "{space_alias}" does not exist', err=True)
     else:
-        click.echo(f'Error while publishing: {result.content}', err=True)
+        result = requests.post(
+            get_em_ulr('api/v1.0/backups/'),
+            headers={"Authorization": utils.get_token(ctx=ctx)},
+            json={'space': space_id, 'name': name, 'comment': comment}
+        )
+
+        if result.status_code == 201:
+            click.echo(f'Backup of space "{space_alias}" was successfuly created')
+        else:
+            click.echo(f'Error while creating the backup: {result.content}', err=True)
