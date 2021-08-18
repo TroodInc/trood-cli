@@ -19,8 +19,17 @@ def ls(ctx):
         headers={"Authorization": utils.get_token(ctx=ctx)}
     )
 
+    namespace_phase = requests.get(
+        get_em_ulr('api/v1.0/spaces/phase'),
+        headers={"Authorization": utils.get_token(ctx=ctx)}
+    ).json()
+
+    data = result.json()
+    for r in data:
+        r['phase'] = namespace_phase[r['name']] if r['name'] in namespace_phase else "Unknown"
+
     if result.status_code == 200:
-        utils.list_table(result.json())
+        utils.list_table(data)
 
 
 @space.command()
